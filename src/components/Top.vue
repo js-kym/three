@@ -12,7 +12,7 @@ export default {
   name: 'Top',
   data () {
     return {
-      particleNum: 10000,
+      particleNum: 7000,
       step: 0,
       step2: 0,
       pointCloud: null,
@@ -78,7 +78,7 @@ export default {
       });
 
       let range = 150;
-      for (let i = 0; i < 7500; i++) {
+      for (let i = 0; i < 9000; i++) {
         let particle = new THREE.Vector3(
           Math.random() * range - range / 2,
           Math.random() * range - range / 2,
@@ -143,27 +143,26 @@ export default {
         //       endPoint = result;
         //   });
         //   break;
-        // case 1:
-        //   // space
-        //   endPoint = endPointSphereRandom(20);
-        //   break;
-        // case 2:
-        //   endPoint = endPointSphereRandomSplit(10);
-        //   break;
-        // case 3:
-        //   // sphere
-        //   endPoint = endPointSphere(20);
-        //   break;
-        // case 4:
-        //   // donus
-        //   endPoint = endPointTorus(5);
-        //   break;
-        // default:
-        //   // cube
-        //   endPoint = endPointCube(20);
-        //   break;
+        case 1:
+          // space
+          this.endPoint = this.endPointSphereRandom(20);
+          break;
+        case 2:
+          this.endPoint = this.endPointSphereRandomSplit(10);
+          break;
+        case 3:
+          // sphere
+          this.endPoint = this.endPointSphere(20);
+          break;
+        case 4:
+          // donus
+          this.endPoint = this.endPointTorus(20);
+          break;
+        default:
+          // cube
+          this.endPoint = this.endPointCube(20);
+          break;
       }
-      this.endPoint = this.endPointCube(20);
     },
     // スタート地点空間
     startPoints: function () {
@@ -401,8 +400,7 @@ export default {
         that.pointCloud.geometry.verticesNeedUpdate = true;
       })
       .onComplete(function () {
-        console.log('this:', this);
-        this.pos = 0;
+        tweenPos.pos = 0;
         let list = [];
         that.loadedGeometry.vertices = [];
         // 参照渡しになってしまうのであらためて入れなおす
