@@ -27,6 +27,7 @@ export default {
     };
   },
   computed: {
+    // 分裂の計算
     randomSphere: function () {
       return function (rad) {
         // 単位球内
@@ -48,6 +49,20 @@ export default {
         };
 
         return pos;
+      };
+    },
+    // シャッフル
+    shuffle: function () {
+      return function (ary) {
+        let tmpAry = [].concat(ary);
+        let i = tmpAry.length;
+        while (i > 0) {
+          let j = Math.floor(Math.random() * i);
+          let t = tmpAry[--i];
+          tmpAry[i] = ary[j];
+          tmpAry[j] = t;
+        }
+        return tmpAry;
       };
     }
   },
@@ -148,7 +163,7 @@ export default {
         //   endPoint = endPointCube(20);
         //   break;
       }
-      this.endPoint = this.endPointSphereRandomSplit(10);
+      this.endPoint = this.endPointSphere(20);
     },
     // スタート地点空間
     startPoints: function () {
@@ -280,6 +295,23 @@ export default {
           });
         }
       }
+      return list;
+    },
+    // 最終地点円
+    endPointSphere: function (radius) {
+      let endPosGeom = new THREE.SphereGeometry(radius, 50, 50);
+      console.log('endPointSphere:', endPosGeom);
+      // 頂点で足りない分を増やす
+      for (let i = endPosGeom.vertices.length; i < this.particleNum; i++) {
+        let range = 150;
+        let particle = new THREE.Vector3(
+          Math.random() * range - range / 2,
+          Math.random() * range - range / 2,
+          Math.random() * range - range / 2
+        );
+        endPosGeom.vertices.push(particle);
+      }
+      let list = this.shuffle(endPosGeom.vertices);
       return list;
     },
     // 画面クリックイベント
