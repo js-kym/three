@@ -6,18 +6,24 @@
 
 <script>
 import * as THREE from 'three';
+import TWEEN from '@tweenjs/tween.js';
 
 export default {
   name: 'Top',
   data () {
     return {
+      particleNum: 10000,
       step: 0,
       step2: 0,
       pointCloud: null,
       spacePoint: null,
       camera: null,
       scene: null,
-      canvasRenderer: null
+      canvasRenderer: null,
+      loadedGeometry: null,
+      endPoint: null,
+      random: 0,
+      tween: null
     };
   },
   methods: {
@@ -47,15 +53,19 @@ export default {
       this.scene.add(this.spacePoint);
     },
     render () {
-      // TWEEN.update();
+      TWEEN.update();
       // console.log('this.spacePoint:', this.spacePoint.rotation.x);
 
-      this.step += 0;
+      this.step += 0.0003;
       this.step2 += 0.0002;
 
       this.spacePoint.rotation.x = this.step2;
       this.spacePoint.rotation.y = this.step2;
       this.spacePoint.rotation.z = this.step2;
+
+      this.pointCloud.rotation.x = this.step;
+      this.pointCloud.rotation.y = -this.step;
+      this.pointCloud.rotation.z = this.step;
 
       requestAnimationFrame(this.render);
       this.canvasRenderer.render(this.scene, this.camera);
@@ -79,10 +89,103 @@ export default {
       let texture = new THREE.Texture(canvas);
       texture.needsUpdate = true;
       return texture;
+    },
+    // ランダムで最終位置決定
+    setGeom () {
+      if (this.random > 5) {
+        this.random = 0;
+      }
+      console.log('random:', this.random);
+      switch (this.random) {
+        // case 0:
+        //   // logo
+        //   endPointLogo().then(function(result) {
+        //       endPoint = result;
+        //   });
+        //   break;
+        // case 1:
+        //   // space
+        //   endPoint = endPointSphereRandom(20);
+        //   break;
+        // case 2:
+        //   endPoint = endPointSphereRandomSplit(10);
+        //   break;
+        // case 3:
+        //   // sphere
+        //   endPoint = endPointSphere(20);
+        //   break;
+        // case 4:
+        //   // donus
+        //   endPoint = endPointTorus(5);
+        //   break;
+        // default:
+        //   // cube
+        //   endPoint = endPointCube(20);
+        //   break;
+      }
+      this.endPoint = this.endPointSphereRandom(20);
+    },
+    // スタート地点空間
+    startPoints: function () {
+      console.log('startPoints');
+      let geom = new THREE.Geometry();
+      let material = new THREE.PointsMaterial({
+        transparent: true,
+        map: this.generateSprite(),
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      let range = 150;
+      for (let i = 0; i < this.particleNum; i++) {
+        let particle = new THREE.Vector3(
+          Math.random() * range - range / 2,
+          Math.random() * range - range / 2,
+          Math.random() * range - range / 2
+        );
+        geom.vertices.push(particle);
+      }
+
+      this.loadedGeometry = geom.clone();
+      console.log('loadedGeometry:', this.loadedGeometry);
+
+      this.pointCloud = new THREE.Points(geom, material);
+      this.pointCloud.name = 'particles';
+
+      this.scene.add(this.pointCloud);
+    },
+    // 最終地点(一様乱数生成)
+    endPointSphereRandom: function (radius) {
+      let list = [];
+      for (let i = 0; i < this.particleNum; i++) {
+        // 単位球内
+        // 0-2piまでの一様乱数
+        let ganma = Math.random() * Math.PI * 2;
+        // -1 - 1の一様乱数
+        let z = Math.random() * 2 - 1;
+        // 0 - 1の一様乱数
+        let r = Math.random();
+
+        let posX = radius * Math.cbrt(r) * Math.sqrt(1 - z * z) * Math.cos(ganma);
+        let posY = radius * Math.cbrt(r) * Math.sqrt(1 - z * z) * Math.sin(ganma);
+        let posZ = radius * Math.cbrt(r) * z;
+        list.push({
+          x: posX,
+          y: posY,
+          z: posZ
+        });
+      }
+      return list;
+    },
+    // 画面クリックイベント
+    clickFunc: function () {
+      document.getElementById('WebGL-output').removeEventListener('click', this.clickFunc);
+      this.tween.start();
     }
   },
   mounted () {
     console.log('mounted');
+    const that = this;
     // let loader = new THREE.TDSLoader();
 
     // シーンを生成 すべての物体・高原を保持して変更を監視するコンテナオブジェクト
@@ -104,8 +207,53 @@ export default {
 
     document.getElementById('WebGL-output').appendChild(this.canvasRenderer.domElement);
 
+    // クリックで形を変える
+    document.getElementById('WebGL-output').addEventListener('click', this.clickFunc);
+    let tweenPos = {pos: 0};
+
+    this.tween = new TWEEN.Tween(tweenPos)
+      .to({pos: 1}, 3000) // Quartic.InOut: Circular.Out
+      .easing(TWEEN.Easing.Quadratic.InOut)
+      .onUpdate(function () {
+        let count = 0;
+        let pos = tweenPos.pos;
+
+        let sita = Math.PI / 2 * pos;
+        let sita2 = (Math.PI / 2 * pos) - (Math.PI / 2);
+
+        that.loadedGeometry.vertices.forEach(function (e, index) {
+          let posX = ((that.endPoint[index].x - e.x) * Math.sin(sita)) + e.x;
+          let posY = ((that.endPoint[index].y - e.y) * Math.cos(sita2)) + e.y;
+          let posZ = ((that.endPoint[index].z - e.z) * Math.cos(sita2)) + e.z;
+          that.pointCloud.geometry.vertices[count++].set(posX, posY, posZ);
+        });
+
+        that.pointCloud.geometry.verticesNeedUpdate = true;
+      })
+      .onComplete(function () {
+        console.log('this:', this);
+        this.pos = 0;
+        let list = [];
+        that.loadedGeometry.vertices = [];
+        // 参照渡しになってしまうのであらためて入れなおす
+        that.pointCloud.geometry.vertices.forEach(function (v) {
+          list.push({
+            x: v.x,
+            y: v.y,
+            z: v.z
+          });
+        });
+        that.loadedGeometry.vertices = list;
+        that.random++;
+        that.setGeom();
+        console.log('onComplete loadedGeometry:', that.loadedGeometry);
+        document.getElementById('WebGL-output').addEventListener('click', that.clickFunc);
+      });
+
     // スタート頂点位置
-    // this.startPoints();
+    this.startPoints();
+    // ゴール頂点位置
+    this.setGeom();
     // 空間にパーティクル
     this.createPointsSpace();
     this.render();
