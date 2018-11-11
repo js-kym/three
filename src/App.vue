@@ -16,6 +16,7 @@ export default {
 </script>
 
 <style>
+html,
 body {
   margin: 0;
   overflow: hidden;
@@ -28,5 +29,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 </style>

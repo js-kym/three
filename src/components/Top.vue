@@ -1,5 +1,6 @@
 <template>
   <div class="top">
+    <div class="attention">Please click the screen</div>
     <div id="WebGL-output"></div>
   </div>
 </template>
@@ -426,6 +427,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .top {
+  position: relative;
   width: 100%;
   height: 100%;
 }
@@ -436,5 +438,16 @@ export default {
   width: 100%;
   height: 100%;
   z-index: 1;
+}
+.attention {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  background: rgba(0, 0, 0, 0.7);
+  color: rgba(225, 225, 225, 0.9);
+  z-index: 100;
 }
 </style>
