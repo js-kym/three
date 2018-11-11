@@ -5,14 +5,14 @@
 </template>
 
 <script>
-import Top from './components/Top'
+import Top from './components/Top';
 
 export default {
   name: 'App',
   components: {
     Top
   }
-}
+};
 </script>
 
 <style>
