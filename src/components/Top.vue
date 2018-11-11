@@ -26,6 +26,31 @@ export default {
       tween: null
     };
   },
+  computed: {
+    randomSphere: function () {
+      return function (rad) {
+        // 単位球内
+        // 0-2piまでの一様乱数
+        let ganma = Math.random() * Math.PI * 2;
+        // -1 - 1の一様乱数
+        let z = Math.random() * 2 - 1;
+        // 0 - 1の一様乱数
+        let r = Math.random();
+
+        let posX = rad * Math.cbrt(r) * Math.sqrt(1 - z * z) * Math.cos(ganma);
+        let posY = rad * Math.cbrt(r) * Math.sqrt(1 - z * z) * Math.sin(ganma);
+        let posZ = rad * Math.cbrt(r) * z;
+
+        let pos = {
+          x: posX,
+          y: posY,
+          z: posZ
+        };
+
+        return pos;
+      };
+    }
+  },
   methods: {
     // 空間にパーティクル生成
     createPointsSpace: function () {
@@ -123,7 +148,7 @@ export default {
         //   endPoint = endPointCube(20);
         //   break;
       }
-      this.endPoint = this.endPointSphereRandom(20);
+      this.endPoint = this.endPointSphereRandomSplit(10);
     },
     // スタート地点空間
     startPoints: function () {
@@ -174,6 +199,86 @@ export default {
           y: posY,
           z: posZ
         });
+      }
+      return list;
+    },
+    // 最終地点(一様乱数生成分裂)
+    endPointSphereRandomSplit: function (radius) {
+      // particleNumを100こにわけて分裂させる
+      let list = [];
+      let pos = {};
+      for (let i = 0; i < this.particleNum; i++) {
+        if (i < 1000) {
+          pos = this.randomSphere(3);
+          list.push({
+            x: pos.x + 20,
+            y: pos.y + 20,
+            z: pos.z + 20
+          });
+        } else if (i < 2000) {
+          pos = this.randomSphere(5);
+          list.push({
+            x: pos.x - 20,
+            y: pos.y - 20,
+            z: pos.z - 20
+          });
+        } else if (i < 3000) {
+          pos = this.randomSphere(5);
+          list.push({
+            x: pos.x + 20,
+            y: pos.y - 20,
+            z: pos.z - 20
+          });
+        } else if (i < 4000) {
+          pos = this.randomSphere(5);
+          list.push({
+            x: pos.x + 5,
+            y: pos.y + 20,
+            z: pos.z - 20
+          });
+        } else if (i < 5000) {
+          pos = this.randomSphere(5);
+          list.push({
+            x: pos.x - 20,
+            y: pos.y + 20,
+            z: pos.z + 10
+          });
+        } else if (i < 6000) {
+          pos = this.randomSphere(4);
+          list.push({
+            x: pos.x + 10,
+            y: pos.y - 20,
+            z: pos.z + 10
+          });
+        } else if (i < 7000) {
+          pos = this.randomSphere(4);
+          list.push({
+            x: pos.x - 10,
+            y: pos.y - 10,
+            z: pos.z + 10
+          });
+        } else if (i < 8000) {
+          pos = this.randomSphere(4);
+          list.push({
+            x: pos.x + 10,
+            y: pos.y + 5,
+            z: pos.z + 10
+          });
+        } else if (i < 9000) {
+          pos = this.randomSphere(5);
+          list.push({
+            x: pos.x - 10,
+            y: pos.y + 5,
+            z: pos.z + 0
+          });
+        } else {
+          pos = this.randomSphere(4);
+          list.push({
+            x: pos.x + 5,
+            y: pos.y - 5,
+            z: pos.z - 5
+          });
+        }
       }
       return list;
     },
