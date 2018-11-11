@@ -350,7 +350,6 @@ export default {
   mounted () {
     console.log('mounted');
     const that = this;
-    // let loader = new THREE.TDSLoader();
 
     // シーンを生成 すべての物体・高原を保持して変更を監視するコンテナオブジェクト
     this.scene = new THREE.Scene();
