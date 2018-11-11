@@ -163,7 +163,7 @@ export default {
         //   endPoint = endPointCube(20);
         //   break;
       }
-      this.endPoint = this.endPointSphere(20);
+      this.endPoint = this.endPointTorus(20);
     },
     // スタート地点空間
     startPoints: function () {
@@ -301,6 +301,23 @@ export default {
     endPointSphere: function (radius) {
       let endPosGeom = new THREE.SphereGeometry(radius, 50, 50);
       console.log('endPointSphere:', endPosGeom);
+      // 頂点で足りない分を増やす
+      for (let i = endPosGeom.vertices.length; i < this.particleNum; i++) {
+        let range = 150;
+        let particle = new THREE.Vector3(
+          Math.random() * range - range / 2,
+          Math.random() * range - range / 2,
+          Math.random() * range - range / 2
+        );
+        endPosGeom.vertices.push(particle);
+      }
+      let list = this.shuffle(endPosGeom.vertices);
+      return list;
+    },
+    // 最終地点ドーナツ
+    endPointTorus: function (radius) {
+      let endPosGeom = new THREE.TorusGeometry(radius, 10, 45, 45);
+      console.log('endPointTorus:', endPosGeom);
       // 頂点で足りない分を増やす
       for (let i = endPosGeom.vertices.length; i < this.particleNum; i++) {
         let range = 150;
