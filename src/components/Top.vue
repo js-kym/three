@@ -132,29 +132,23 @@ export default {
     },
     // ランダムで最終位置決定
     setGeom () {
-      if (this.random > 5) {
+      if (this.random > 4) {
         this.random = 0;
       }
       console.log('random:', this.random);
       switch (this.random) {
-        // case 0:
-        //   // logo
-        //   endPointLogo().then(function(result) {
-        //       endPoint = result;
-        //   });
-        //   break;
-        case 1:
+        case 0:
           // space
           this.endPoint = this.endPointSphereRandom(20);
           break;
-        case 2:
+        case 1:
           this.endPoint = this.endPointSphereRandomSplit(10);
           break;
-        case 3:
+        case 2:
           // sphere
           this.endPoint = this.endPointSphere(20);
           break;
-        case 4:
+        case 3:
           // donus
           this.endPoint = this.endPointTorus(20);
           break;
