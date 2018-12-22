@@ -1,6 +1,7 @@
 <template>
   <div class="top">
-    <div class="attention">Please click the screen</div>
+    <div id="attention">Please click the screen</div>
+    <div v-if="checkSpeechRecognition" id="mic"><img src="../assets/icon_mic.png"></div>
     <div id="WebGL-output"></div>
   </div>
 </template>
@@ -24,10 +25,15 @@ export default {
       loadedGeometry: null,
       endPoint: null,
       random: 0,
-      tween: null
+      tween: null,
+      speech: null
     };
   },
   computed: {
+    // webkitSpeechRecognitionがあるか
+    checkSpeechRecognition: function () {
+      return 'webkitSpeechRecognition' in window;
+    },
     // 分裂の計算
     randomSphere: function () {
       return function (rad) {
@@ -345,6 +351,46 @@ export default {
     clickFunc: function () {
       document.getElementById('WebGL-output').removeEventListener('click', this.clickFunc);
       this.tween.start();
+    },
+    clickMic: function () {
+      console.log('speech start');
+      const mic = document.getElementById('mic');
+      mic.removeEventListener('click', this.clickMic, false);
+      // ボタンの背景を変更
+      mic.classList.add('animation');
+      // 音声認識をスタート
+      this.speech = new webkitSpeechRecognition();
+      this.speech.lang = 'ja';
+      this.speech.start();
+      this.speech.addEventListener('result', (e) => {
+        this.resultMic(e);
+      }, false);
+      this.speech.addEventListener('end', this.endMic, false);
+    },
+    resultMic: function (e) {
+      // 音声認識で取得した情報を、コンソール画面に表示
+      console.log(e);
+      console.log(e.results[0].isFinal);
+      if (e.results[0].isFinal) {
+        console.log(e.results[0][0].transcript);
+        if (e.results[0][0].transcript.indexOf('まる') !== -1) {
+          // sphere
+          this.endPoint = this.endPointSphere(20);
+          this.tween.start();
+        } else if (e.results[0][0].transcript.indexOf('資格') !== -1) {
+          // cube
+          this.endPoint = this.endPointCube(20);
+          this.tween.start();
+        } else if (e.results[0][0].transcript.indexOf('ドーナツ') !== -1) {
+          // donus
+          this.endPoint = this.endPointTorus(20);
+          this.tween.start();
+        }
+      }
+    },
+    endMic: function () {
+      // 音声認識をスタート
+      this.speech.start();
     }
   },
   mounted () {
@@ -419,6 +465,10 @@ export default {
     // 空間にパーティクル
     this.createPointsSpace();
     this.render();
+
+    // 音声認識
+    const mic = document.getElementById('mic');
+    mic.addEventListener('click', this.clickMic, false);
   }
 };
 </script>
@@ -438,7 +488,7 @@ export default {
   height: 100%;
   z-index: 1;
 }
-.attention {
+#attention {
   position: absolute;
   top: 0;
   left: 0;
@@ -448,5 +498,47 @@ export default {
   background: rgba(0, 0, 0, 0.7);
   color: rgba(225, 225, 225, 0.9);
   z-index: 100;
+}
+#mic {
+  position: absolute;
+  left: calc(50% - 42px);
+  bottom: 20px;
+  z-index: 99;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.47);
+  font-weight: bold;
+  width: 84px;
+  height: 84px;
+  line-height: 84px;
+  border-radius: 50%;
+  text-align: center;
+  vertical-align: middle;
+  overflow: hidden;
+}
+#mic.animation {
+  animation-name: rec;
+  animation-duration: 2s;
+  background: rgba(255, 0, 0, 0.7);
+  animation-iteration-count: infinite;
+}
+@keyframes rec {
+    0% {
+        background: rgba(255, 0, 0, 0.7);
+    }
+    50% {
+        background: rgba(255, 0, 0, 0.3);
+    }
+    100% {
+        background: rgba(255, 0, 0, 0.7);
+    }
+}
+#mic.waiting {
+  opacity: 0.5;
+}
+#mic img {
+  width: 64px;
+  height: 64px;
+  margin: 10px
 }
 </style>
